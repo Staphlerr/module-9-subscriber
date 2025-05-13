@@ -37,4 +37,34 @@ Putting it all together, `guest:guest@localhost:5672` tells the client to connec
 On my machine, the Total queued messages is 25 (0 Ready, 25 Unacked).
 This is because I ran the publisher five times while the subscriber was offline, so each run added 5 messages that piled up unacknowledged (5 events × 5 runs = 25). If you start (or restart) the subscriber, you’ll see the queue total drop back down to zero as it consumes—and acknowledges—all of them.
 
+#### d. Running 3 Subscriber
+- RabbitMQ
+![alt text](image.png)
+When I spun up **three** subscriber processes, the **Total queued messages** spike dropped almost instantly—even though I’d published 5 messages per run, 6 runs in a row (30 total). That’s because RabbitMQ distributes messages in a round-robin fashion across all connected consumers. In my consoles:
+
+- Subscriber 1
+![alt text](image-2.png)
+- Subscriber 2
+![alt text](image-3.png)
+- Subscriber 3
+![alt text](image-4.png)
+
+- **Subscriber 1** handled a subset (e.g. “Budi”, “Dira”)  
+- **Subscriber 2** handled another (“Amir”, “Cica”, “Emir”)  
+- **Subscriber 3** picked up the remainder  
+
+As a result, those 15 unacked messages were split among three handlers instead of one, drastically reducing the queue depth.
+
+#### e. Reflection & Possible Improvements
+
+- **In-app concurrency**  
+  Instead of running multiple OS processes, we could spawn multiple Tokio tasks or threads within a single subscriber binary to achieve the same parallelism with less overhead.
+
+- **Prefetch/QoS tuning**  
+  By setting a `prefetch_count` (QoS) on the channel, each consumer fetches only a limited number of messages at once, preventing one handler from grabbing too many and sitting idle.
+
+- **Graceful shutdown & error handling**  
+  Implement signal handling (e.g. Ctrl+C) and proper error retries to ensure unacknowledged messages are requeued cleanly if a subscriber goes down.
+
+
 </details>
