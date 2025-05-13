@@ -1,4 +1,4 @@
-# Tutorial 9 Event-Driven Programming
+# Tutorial 9 Event-Driven Architecture
 
 Name: Belva Ghani Abhinaya
 
@@ -30,3 +30,11 @@ amqp://<username>:<password>@<host>:<port>
 * **`5672`**: the default TCP port on which RabbitMQ listens for AMQP connections.
 
 Putting it all together, `guest:guest@localhost:5672` tells the client to connect over AMQP to a broker running on the local machine at port 5672 using the `guest` account.
+
+#### c. RabbitMQ Queue Overview
+
+![alt text](image-1.png)
+On my machine, the Total queued messages is 25 (0 Ready, 25 Unacked).
+This is because I ran the publisher five times while the subscriber was offline, so each run added 5 messages that piled up unacknowledged (5 events × 5 runs = 25). If you start (or restart) the subscriber, you’ll see the queue total drop back down to zero as it consumes—and acknowledges—all of them.
+
+</details>
